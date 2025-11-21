@@ -1,12 +1,17 @@
-import { useState } from 'react'
 import './App.css'
+import LogTable from './components/LogTable'
+import { FilterForm } from './components/FilterForm'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-     <div>hey</div>
+      <div className='flex justify-center items-center' >
+        <h1 className='m-10 text-6xl font-medium font-serif'>LOG ANALYZER</h1>
+      </div>
+     
+      <FilterForm />
+      <LogTable />
     </>
   )
 }
