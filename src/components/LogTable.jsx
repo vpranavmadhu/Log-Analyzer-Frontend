@@ -8,73 +8,55 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import axios from 'axios';
-import { Box } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 
 
 
 const columns = [
-  { id: 'timestamp', label: 'TIME STAMP', minWidth: 170 },
+  { id: 'timestamp', label: 'TIME STAMP', minWidth: 170, align: 'right' },
   {
     id: 'level',
     label: 'LEVEL',
     minWidth: 170,
     align: 'right',
-    format: (value) => value.toLocaleString('en-US'),
   },
   {
     id: 'component',
     label: 'COMPONENT',
     minWidth: 170,
     align: 'right',
-    format: (value) => value.toLocaleString('en-US'),
   },
   {
     id: 'host',
     label: 'HOST',
     minWidth: 170,
     align: 'right',
-    format: (value) => value.toFixed(2),
   },
   {
     id: 'request_id',
     label: 'REQUEST ID',
     minWidth: 170,
     align: 'right',
-    format: (value) => value.toFixed(2),
   },
   {
     id: 'message',
     label: 'MESSAGE',
     minWidth: 170,
     align: 'right',
-    format: (value) => value.toFixed(2),
   },
 ];
 
-function createData(timestamp, level, component, host, request_id, message) {
-  return { timestamp, level, component, host, request_id, message };
-}
-
-const rows = [
-  createData(
-    '2025-11-20 10:30:22',
-    'INFO',
-    'AuthService',
-    '192.168.1.10',
-    'REQ12345',
-    'User logged in successfully'
-  )
-];
 
 
 
 export default function LogTable() {
   const [logData, setLogData] = React.useState([])
-
+  const [loading, setLoading] = React.useState(true); //logs
+  const [logCount, setLogCount] = React.useState(0); //log counts
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   React.useEffect(() => {
-    fetchData()
+    fetchLogData()
   }, [])
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -86,43 +68,64 @@ export default function LogTable() {
   };
 
 
-  const fetchData = () => {
-    axios.get("http://localhost:8080/logs")
-      .then(response => {
-        setLogData(response.data.entries)
-        console.log("data: ", response.data)
+  const fetchLogData = () => {
+    setLoading(true)
 
+    axios
+      .get("http://localhost:8080/logs", {
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch(error => {
-        console.error("Error fetching logs:", error);
+      .then(function (response) {
+        const rows = response.data.entries.map((e) => ({
+          id: e.ID ?? e.id,
+          timestamp: e.TimeStamp ?? e.timestamp,
+          level: e.Level?.Level ?? "",
+          component: e.Component?.Component ?? "",
+          host: e.Host?.Host ?? "",
+          request_id: e.RequestID || e.RequestId || e.requestId || e.request_id || "",
+          message: e.Message ?? e.message,
+        }));
+        setLogData(rows);
+        setLogCount(response.data.count)
       })
-      .finally(() => {
-        // setLoading(false); // always runs
-        console.log("Request completed");
+      .catch(function (error) {
+        console.log(error);
+      })
+      .finally(function () {
+        setLoading(false)
       });
+  };
 
-
-
-
-  }
   console.log("Full response:", logData);
 
 
   return (
-    <div className='mt-10 w-full flex justify-center items-center flex-col'>
+    <div className='! mt-10 w-full flex justify-center items-center flex-col border-slate-800 rounded-6xl'>
       <Box>
-        <p className='p-5'>Total results: {logData.length}</p>
+        <p className='p-5'>Total results: {logCount}</p>
       </Box>
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <Paper sx={{
+        width: '100%',
+        overflow: 'hidden',
+        borderRadius: '16px'
+      }}>
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
-            <TableHead className='font-mono '>
+            <TableHead>
               <TableRow>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     align={column.align}
                     style={{ minWidth: column.minWidth }}
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      backgroundColor: '#f5f5f5',
+                      fontFamily: 'mono',
+                    }}
                   >
                     {column.label}
                   </TableCell>
@@ -130,42 +133,36 @@ export default function LogTable() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* {rows
+              {(loading || logData.length === 0) ?
+                (Array.from({ length: rowsPerPage }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell colSpan={columns.length}>
+                                        <Skeleton
+                                            variant="rectangular"
+                                            width="100%"
+                                            height={30}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))):(logData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => {
-                  return (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                      {columns.map((column) => {
-                        const value = row[column.id];
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {column.format && typeof value === 'number'
-                              ? column.format(value)
-                              : value}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })} */}
-              {logData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => (
-                  <TableRow key={index} hover>
+                .map((row) => (
+                  <TableRow key={row.id} hover>
                     {columns.map((column) => (
-                      <TableCell key={column.id}>
+                      <TableCell key={column.id} align={column.align}>
                         {row[column.id]}
                       </TableCell>
                     ))}
                   </TableRow>
-                ))}
+                )))}
             </TableBody>
+
           </Table>
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
-          count={rows.length}
+          count={logData.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
