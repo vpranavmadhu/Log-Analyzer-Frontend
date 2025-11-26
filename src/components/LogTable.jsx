@@ -9,6 +9,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import axios from 'axios';
 import { Box, Skeleton } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLogs } from '../logSlice';
 
 
 
@@ -50,11 +52,16 @@ const columns = [
 
 
 export default function LogTable() {
-  const [logData, setLogData] = React.useState([])
+  // const [logData, setLogData] = React.useState([])
+  const logData = useSelector((state)=> state?.logs?.logs)
+
   const [loading, setLoading] = React.useState(true); //logs
   const [logCount, setLogCount] = React.useState(0); //log counts
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const dispatch = useDispatch();
+
   React.useEffect(() => {
     fetchLogData()
   }, [page,rowsPerPage])
@@ -91,8 +98,9 @@ export default function LogTable() {
           request_id: e.RequestID || e.RequestId || e.requestId || e.request_id || "",
           message: e.Message ?? e.message,
         }));
-        setLogData(rows);
-        setLogCount(response.data.count)
+        // setLogData(rows);
+        dispatch(setLogs(rows));
+        setLogCount(response.data.count);
       })
       .catch(function (error) {
         console.log(error);
@@ -137,7 +145,7 @@ export default function LogTable() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(loading || logData.length === 0) ?
+              {(loading || logCount === 0) ?
                 (Array.from({ length: rowsPerPage }).map((_, i) => (
                                 <TableRow key={i}>
                                     <TableCell colSpan={columns.length}>
