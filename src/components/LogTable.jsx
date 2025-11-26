@@ -57,7 +57,7 @@ export default function LogTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   React.useEffect(() => {
     fetchLogData()
-  }, [])
+  }, [page,rowsPerPage])
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -72,10 +72,14 @@ export default function LogTable() {
     setLoading(true)
 
     axios
-      .get("http://localhost:8080/logs", {
+      .get("http://localhost:8080/alllogs", {
         headers: {
           "Content-Type": "application/json",
         },
+        params: {
+          'page': page,
+          'pageSize' : rowsPerPage
+        }
       })
       .then(function (response) {
         const rows = response.data.entries.map((e) => ({
@@ -112,7 +116,7 @@ export default function LogTable() {
         borderRadius: '16px'
       }}>
         <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+          <Table stickyHeader aria-label="sticky table" >
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
@@ -144,9 +148,7 @@ export default function LogTable() {
                                         />
                                     </TableCell>
                                 </TableRow>
-                            ))):(logData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
+                            ))):(logData.map((row) => (
                   <TableRow key={row.id} hover>
                     {columns.map((column) => (
                       <TableCell key={column.id} align={column.align}>
@@ -162,7 +164,7 @@ export default function LogTable() {
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
-          count={logData.length}
+          count={logCount}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
