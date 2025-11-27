@@ -4,7 +4,11 @@ import {
   Button,
   Box
 } from '@mui/material'
-import React from 'react'
+import axios from 'axios';
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { setCount, setLogs, setPage } from '../logSlice';
+import { setFilters } from '../filterSlice';
 
 const levels = ['ERROR', 'WARN', 'DEBUG', 'INFO'];
 const components = ['api-server', 'cache', 'worker', 'database']
@@ -13,11 +17,70 @@ const hosts = ['web01', 'web02', 'cache01', 'db01']
 export const FilterForm = () => {
   const [level, setLevel] = React.useState([]);
   const [component, setComponent] = React.useState([]);
-  const [host, setHost] = React.useState(null);
-  console.log("level",level)
+  const [host, setHost] = React.useState([]);
+  const [requestId, setRequestId] = useState([]);
+  const [timeStamp, setTimeStamp] = useState([]);
+
+
+
+  // const page = useSelector((state) => state?.logStore?.page)
+  // const rowsPerPage = useSelector((state) => state?.logStore?.rowsPerPage)
+
+
+  const dispatch = useDispatch();
+  // console.log("requestId",requestId)
+
+  const filters = {
+      level: level,
+      component: component,
+      host: host,
+      request_id: requestId,
+      timeStamp: timeStamp,
+    }
+
+    // dispatch(setFilters(filters))
+  // const fetchFIlteredLogs=() => {
+
+  //   axios
+  //   .post(`http://localhost:8080/filter`,{
+  //     level : level,
+  //     component: component,
+  //     host : host,
+  //     request_id: requestId,
+  //     timestamp : timeStamp,
+
+  //   },
+  //    {
+  //     headers: {
+  //       "content-Type" : "application/json"
+  //     },
+  //     params: {
+  //       page : 0,
+  //       pageSize: 10,
+  //     }
+  //   }).then (function(response) {
+  //     const rows = response.data.entries.map((e) => ({
+  //         id: e.ID ?? e.id,
+  //         timestamp: e.TimeStamp ?? e.timestamp,
+  //         level: e.Level?.Level ?? "",
+  //         component: e.Component?.Component ?? "",
+  //         host: e.Host?.Host ?? "",
+  //         request_id: e.RequestID || e.RequestId || e.requestId || e.request_id || "",
+  //         message: e.Message ?? e.message,
+  //       }));
+  //     dispatch(setLogs(rows))
+  //     dispatch(setCount(response.data.count))
+
+  //   }).catch(function (error) {
+  //       console.log(error);
+  //     })
+  //     .finally(function () {
+  //       console.log("filtered final")
+  //     });
+  // }
 
   return (
-    <div>
+    <div className='bg-white h-30 border-slate-800 rounded-2xl flex items-center'>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', p: 2 }}>
 
       <Autocomplete
@@ -43,6 +106,7 @@ export const FilterForm = () => {
       />
 
       <Autocomplete
+      multiple
         options={hosts}
         value={host}
         onChange={(e, newValue) => setHost(newValue)}
@@ -52,11 +116,17 @@ export const FilterForm = () => {
         sx={{ minWidth: 220 }}
       />
 
-      <TextField id="outlined-basic" label="Request ID" variant="outlined" />
+      <TextField id="outlined-basic" label="Request ID" variant="outlined" onChange={(e)=> setRequestId(e.target.value
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== ""))}/>
 
-      <TextField id="outlined-basic" label="Date Time" variant="outlined" />
+      <TextField id="outlined-basic" label="Date Time" variant="outlined"  onChange={(e) => setTimeStamp(e.target.value
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== ""))} />
 
-      <Button variant="contained">SEARCH</Button>
+      <Button variant="contained" onClick={() => {dispatch(setFilters(filters)); setRequestId([]); setTimeStamp([]); dispatch(setPage(0))}}>SEARCH</Button>
     </Box>
     </div>
     

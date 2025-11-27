@@ -10,7 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import axios from 'axios';
 import { Box, Skeleton } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { setLogs } from '../logSlice';
+import { setCount, setLogs, setPage, setRowsPerPage } from '../logSlice';
 
 
 
@@ -53,33 +53,47 @@ const columns = [
 
 export default function LogTable() {
   // const [logData, setLogData] = React.useState([])
-  const logData = useSelector((state)=> state?.logs?.logs)
+  const logData = useSelector((state)=> state?.logStore?.logs)
 
   const [loading, setLoading] = React.useState(true); //logs
-  const [logCount, setLogCount] = React.useState(0); //log counts
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  // const [logCount, setLogCount] = React.useState(0); //log counts
+  const logCount = useSelector((state)=> state?.logStore?.count)
+  // const logCount = useSelector((state)=>state?.logStore?.count)
+  // const [page, setPage] = React.useState(0);
+  const page = useSelector((state)=> state?.logStore?.page)
+  const rowsPerPage = useSelector((state)=> state?.logStore?.rowsPerPage)
+  // const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const dispatch = useDispatch();
 
+   const filters =useSelector((state) => state?.filterStore?.filters)
+
+
   React.useEffect(() => {
     fetchLogData()
-  }, [page,rowsPerPage])
+    
+    
+  }, [page,rowsPerPage,filters])
+
   const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+    // setPage(newPage);
+    dispatch(setPage(newPage))
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
+    // setRowsPerPage(+event.target.value);
+    // setPage(0);
+    dispatch(setRowsPerPage(+event.target.value));
+    dispatch(setPage(0))
   };
 
+  
 
   const fetchLogData = () => {
     setLoading(true)
 
     axios
-      .get("http://localhost:8080/alllogs", {
+      .post("http://localhost:8080/filter", filters ,{
         headers: {
           "Content-Type": "application/json",
         },
@@ -89,6 +103,7 @@ export default function LogTable() {
         }
       })
       .then(function (response) {
+        console.log("response", response)
         const rows = response.data.entries.map((e) => ({
           id: e.ID ?? e.id,
           timestamp: e.TimeStamp ?? e.timestamp,
@@ -100,7 +115,9 @@ export default function LogTable() {
         }));
         // setLogData(rows);
         dispatch(setLogs(rows));
-        setLogCount(response.data.count);
+        dispatch(setCount(response.data.count))
+        // setLogCount(response.data.count);
+        // dispatch(setCount(response.data.count))
       })
       .catch(function (error) {
         console.log(error);
@@ -170,7 +187,7 @@ export default function LogTable() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
+          rowsPerPageOptions={[10, 25, 100,500]}
           component="div"
           count={logCount}
           rowsPerPage={rowsPerPage}
