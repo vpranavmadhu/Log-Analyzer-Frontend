@@ -132,9 +132,6 @@ export default function LogTable() {
 
   return (
     <div className='! mt-10 w-full flex justify-center items-center flex-col border-slate-800 rounded-6xl'>
-      <Box>
-        <p className='p-5'>Total results: {logCount}</p>
-      </Box>
       <Paper sx={{
         width: '100%',
         overflow: 'hidden',
