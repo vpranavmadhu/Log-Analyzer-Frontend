@@ -9,6 +9,8 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setCount, setLogs, setPage } from '../logSlice';
 import { setFilters } from '../filterSlice';
+import DateTimeRange from './DateTImePicker';
+import dayjs from 'dayjs';
 
 const levels = ['ERROR', 'WARN', 'DEBUG', 'INFO'];
 const components = ['api-server', 'cache', 'worker', 'database']
@@ -19,7 +21,12 @@ export const FilterForm = () => {
   const [component, setComponent] = React.useState([]);
   const [host, setHost] = React.useState([]);
   const [requestId, setRequestId] = useState([]);
-  const [timeStamp, setTimeStamp] = useState([]);
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+
+  console.log("start: ", startTime)
+  console.log("end: ", endTime);
+  
 
 
 
@@ -35,53 +42,15 @@ export const FilterForm = () => {
       component: component,
       host: host,
       request_id: requestId,
-      timeStamp: timeStamp,
+      start_time: startTime ? dayjs(startTime).format("YYYY-MM-DD HH:mm:ss") : null,
+      end_time: endTime ? dayjs(endTime).format("YYYY-MM-DD HH:mm:ss") : null
     }
 
-    // dispatch(setFilters(filters))
-  // const fetchFIlteredLogs=() => {
-
-  //   axios
-  //   .post(`http://localhost:8080/filter`,{
-  //     level : level,
-  //     component: component,
-  //     host : host,
-  //     request_id: requestId,
-  //     timestamp : timeStamp,
-
-  //   },
-  //    {
-  //     headers: {
-  //       "content-Type" : "application/json"
-  //     },
-  //     params: {
-  //       page : 0,
-  //       pageSize: 10,
-  //     }
-  //   }).then (function(response) {
-  //     const rows = response.data.entries.map((e) => ({
-  //         id: e.ID ?? e.id,
-  //         timestamp: e.TimeStamp ?? e.timestamp,
-  //         level: e.Level?.Level ?? "",
-  //         component: e.Component?.Component ?? "",
-  //         host: e.Host?.Host ?? "",
-  //         request_id: e.RequestID || e.RequestId || e.requestId || e.request_id || "",
-  //         message: e.Message ?? e.message,
-  //       }));
-  //     dispatch(setLogs(rows))
-  //     dispatch(setCount(response.data.count))
-
-  //   }).catch(function (error) {
-  //       console.log(error);
-  //     })
-  //     .finally(function () {
-  //       console.log("filtered final")
-  //     });
-  // }
-
   return (
-    <div className='bg-white h-30 border-slate-800 rounded-2xl flex items-center'>
+    <div className='! bg-white h-30 border-slate-800 rounded-2xl flex items-center justify-center flex-col min-h-50'>
+      {/* <div><h3>FILTER FORM</h3></div> */}
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', p: 2 }}>
+        
 
       <Autocomplete
         multiple
@@ -121,12 +90,15 @@ export const FilterForm = () => {
         .map(v => v.trim())
         .filter(v => v !== ""))}/>
 
-      <TextField id="outlined-basic" label="Date Time" variant="outlined"  onChange={(e) => setTimeStamp(e.target.value
-        .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== ""))} />
-
-      <Button variant="contained" onClick={() => {dispatch(setFilters(filters)); setRequestId([]); setTimeStamp([]); dispatch(setPage(0))}}>SEARCH</Button>
+      <Button variant="contained" onClick={() => {dispatch(setFilters(filters)); setRequestId([]); dispatch(setPage(0))}}>SEARCH</Button>
+    </Box>
+    <Box>
+      <DateTimeRange
+        startTime={startTime}
+        endTime={endTime}
+        setStartTime={setStartTime}
+        setEndTime={setEndTime}
+      />
     </Box>
     </div>
     
