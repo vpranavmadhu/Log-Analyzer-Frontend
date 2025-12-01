@@ -15,7 +15,19 @@ import { setCount, setLogs, setPage, setRowsPerPage } from '../logSlice';
 
 
 const columns = [
-  { id: 'timestamp', label: 'TIME STAMP', minWidth: 170, align: 'right' },
+
+  {
+    id: 'id',
+    label: 'No.',
+    minWidth: 50,
+    align: 'right',
+  },
+  {
+    id: 'timestamp',
+    label: 'TIME STAMP',
+    minWidth: 170,
+    align: 'right'
+  },
   {
     id: 'level',
     label: 'LEVEL',
@@ -53,27 +65,27 @@ const columns = [
 
 export default function LogTable() {
   // const [logData, setLogData] = React.useState([])
-  const logData = useSelector((state)=> state?.logStore?.logs)
+  const logData = useSelector((state) => state?.logStore?.logs)
 
   const [loading, setLoading] = React.useState(true); //logs
   // const [logCount, setLogCount] = React.useState(0); //log counts
-  const logCount = useSelector((state)=> state?.logStore?.count)
+  const logCount = useSelector((state) => state?.logStore?.count)
   // const logCount = useSelector((state)=>state?.logStore?.count)
   // const [page, setPage] = React.useState(0);
-  const page = useSelector((state)=> state?.logStore?.page)
-  const rowsPerPage = useSelector((state)=> state?.logStore?.rowsPerPage)
+  const page = useSelector((state) => state?.logStore?.page)
+  const rowsPerPage = useSelector((state) => state?.logStore?.rowsPerPage)
   // const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const dispatch = useDispatch();
 
-   const filters =useSelector((state) => state?.filterStore?.filters)
+  const filters = useSelector((state) => state?.filterStore?.filters)
 
 
   React.useEffect(() => {
     fetchLogData()
-    
-    
-  }, [page,rowsPerPage,filters])
+
+
+  }, [page, rowsPerPage, filters])
 
   const handleChangePage = (event, newPage) => {
     // setPage(newPage);
@@ -87,25 +99,26 @@ export default function LogTable() {
     dispatch(setPage(0))
   };
 
-  
+
 
   const fetchLogData = () => {
     setLoading(true)
 
     axios
-      .post("http://localhost:8080/filter", filters ,{
+      .post("http://localhost:8080/filter", filters, {
         headers: {
           "Content-Type": "application/json",
         },
         params: {
           'page': page,
-          'pageSize' : rowsPerPage
+          'pageSize': rowsPerPage
         }
       })
       .then(function (response) {
         console.log("response", response)
-        const rows = response.data.entries.map((e) => ({
-          id: e.ID ?? e.id,
+        const rows = response.data.entries.map((e,index) => ({
+          // id: e.ID ?? e.id,
+          id: page * rowsPerPage + index + 1,
           timestamp: e.TimeStamp ?? e.timestamp,
           level: e.Level?.Level ?? "",
           component: e.Component?.Component ?? "",
@@ -127,7 +140,7 @@ export default function LogTable() {
       });
   };
 
-  console.log("Full response:", logData);
+  // console.log("Full response:", logData);
 
 
   return (
@@ -161,16 +174,16 @@ export default function LogTable() {
             <TableBody>
               {(loading || logCount === 0) ?
                 (Array.from({ length: rowsPerPage }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell colSpan={columns.length}>
-                                        <Skeleton
-                                            variant="rectangular"
-                                            width="100%"
-                                            height={30}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))):(logData.map((row) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={columns.length}>
+                      <Skeleton
+                        variant="rectangular"
+                        width="100%"
+                        height={30}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))) : (logData.map((row) => (
                   <TableRow key={row.id} hover>
                     {columns.map((column) => (
                       <TableCell key={column.id} align={column.align}>
@@ -184,7 +197,7 @@ export default function LogTable() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[10, 25, 100,500]}
+          rowsPerPageOptions={[10, 25, 100, 500]}
           component="div"
           count={logCount}
           rowsPerPage={rowsPerPage}

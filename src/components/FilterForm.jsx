@@ -24,8 +24,8 @@ export const FilterForm = () => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
 
-  console.log("start: ", startTime)
-  console.log("end: ", endTime);
+  console.log("start: ", startTime ? dayjs(startTime).format("YYYY-MM-DD HH:mm:ss") : null)
+  console.log("end: ", endTime ? dayjs(endTime).format("YYYY-MM-DD HH:mm:ss") : null)
   
 
 
@@ -47,8 +47,8 @@ export const FilterForm = () => {
     }
 
   return (
-    <div className='! bg-white h-30 border-slate-800 rounded-2xl flex items-center justify-center flex-col min-h-50'>
-      {/* <div><h3>FILTER FORM</h3></div> */}
+    <div className='! bg-white h-30 border-slate-800 rounded-2xl flex items-center justify-center flex-col min-h-70 mt-20'>
+      <div className='border-3 border-blue-400 mb-5 rounded-1xl'><h1 className='! text-4xl font-medium font-sans'> <span className='bg-blue-400 text-amber-50'> LOG</span> ANALYZER </h1></div>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', p: 2 }}>
         
 
